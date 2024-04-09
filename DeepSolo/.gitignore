@@ -1,0 +1,9 @@
+datasets/
+output/
+data/
+log.txt
+__pycache__/
+*.py[cod]
+AdelaiDet.egg-info/
+build/
+*.so
