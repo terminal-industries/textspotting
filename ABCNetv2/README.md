@@ -291,5 +291,20 @@ For academic use, this project is licensed under the 2-clause BSD License - see 
 
 ## Training by owned data:
 
+1. start docker
 
-OMP_NUM_THREADS=1 python tools/train_net.py    --config-file configs/BAText/Pretrain/v2_attn_R_50.yaml   --num-gpus 8  MODEL.WEIGHTS model_v2_totaltext.pth 
+```
+docker run  --shm-size=8g --gpus all --net=host -v /home/:/home -it tianzhi0549/adet:latest /bin/bash
+```
+
+2. clone code and run 
+
+```
+python setup.py build develop
+```
+
+
+3. Train network 
+```
+OMP_NUM_THREADS=1 python tools/train_net.py    --config-file configs/BAText/Pretrain/v2_attn_R_50_finetune.yaml   --num-gpus 8  MODEL.WEIGHTS model_v2_totaltext.pth 
+```
