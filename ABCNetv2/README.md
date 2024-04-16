@@ -304,7 +304,13 @@ python setup.py build develop
 ```
 
 
-3. Train network 
+3. finetune network 
 ```
 OMP_NUM_THREADS=1 python tools/train_net.py    --config-file configs/BAText/Pretrain/v2_attn_R_50_finetune.yaml   --num-gpus 8  MODEL.WEIGHTS model_v2_totaltext.pth 
+```
+
+4. Train network by
+
+```
+ OMP_NUM_THREADS=1  python tools/train_net.py --config-file configs/BAText/Pretrain/v2_attn_R_50_train.yaml --num-gpus 8 MODEL.WEIGHTS v2_ic15_pretrained.pth
 ```
