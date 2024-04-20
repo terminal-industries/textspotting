@@ -1,4 +1,4 @@
 _BASE_: "../Base-BAText.yaml"
 DATASETS:
-  TRAIN: ("on_site_train", "icdar2015_train") 
+  TRAIN: ("on_site_train", ) 
   TEST: ("icdar2015_test",)
