@@ -317,7 +317,9 @@ This project is based on [Adelaidet](https://github.com/aim-uofa/AdelaiDet). For
 
 1. TransformerTxtSpotting based on deepSolo, 
 
-installation:
+2. make sure your docker support cuda 11.x
+
+3. installation/launch from conda:
 git clone https://github.com/ViTAE-Transformer/DeepSolo.git
 cd DeepSolo
 conda create -n deepsolo python=3.8 -y
