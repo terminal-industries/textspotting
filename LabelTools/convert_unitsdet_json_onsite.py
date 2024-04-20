@@ -15,7 +15,7 @@ license_pl = 2
 directory_path = '/home/ubuntu/workspace/text_det_data/on-site'
 threshold = 0.7
 split_ratio = 0.95
-
+use_units=False
 
 box_to_polygon = lambda x, y, w, h: [x, y, x + w, y, x + w, y + h, x, y + h]
 # Reshape coords to Nx2 array
@@ -44,8 +44,6 @@ def is_bounding_box_larger_than_threshold(bbox, threshold=120):
     return area > threshold
 
 
-# mmocr.utils.poly_intersection
-#ocr = MMOCRInferencer(det='DBNetpp')
 data = {"metainfo": {"dataset_type": "TextDetDataset",
                      "task_name": "textdet",
                      "category": [{"id": 0, "name": "text"}]}
@@ -151,6 +149,10 @@ for item in tqdm(items):
     src_img_path = os.path.join(directory_path,item,'images')
     unit_text_path = os.path.join(directory_path,item,'images_unit_shared_quad_txts')
     relative_img_path = os.path.join(item,'images')
+    check_units = True
+    if use_units:
+        check_units = os.path.exists(unit_text_path)
+                    
 
     if os.path.exists(src_json_path) and os.path.exists(src_img_path) and os.path.exists(unit_text_path)  : 
         for i, filename in enumerate(os.listdir(src_json_path)):
@@ -198,34 +200,36 @@ for item in tqdm(items):
                                 "ignore": False}
                     codes.append(instance)                    
                     instances.append(instance)
-                    num_instances+=1                        
-                for detected_polygon,text,score in zip(bboxes,texts,scores):
-                    # Convert detected_polygon to bounding box format if needed
-                    # For simplicity, assuming detected_polygon is already in bbox format
-                    text = remove_special_characters(text)
-                    
-                    if not text:
-                        continue
+                    num_instances+=1
+                if use_units:            
+                    bboxes, scores ,texts = unit_det(os.path.join(unit_text_path,txt_file))                                
+                    for detected_polygon,text,score in zip(bboxes,texts,scores):
+                        # Convert detected_polygon to bounding box format if needed
+                        # For simplicity, assuming detected_polygon is already in bbox format
+                        text = remove_special_characters(text)
+                        
+                        if not text:
+                            continue
 
-                    if score < threshold:                        
-                        continue                    
-                    detected_polygon = detected_polygon.reshape(-1)
-                    gbbox = covnertpoly2bbox(detected_polygon)
-                    if not is_bounding_box_larger_than_threshold(gbbox):
-                        continue    
-                    intersect = False
-                    for code in codes:
-                        if utils.polygon_utils.poly_intersection(convert2polygon(code['polygon']), convert2polygon(detected_polygon)) != 0.0:
-                            intersect = True
+                        if score < threshold:                        
+                            continue                    
+                        detected_polygon = detected_polygon.reshape(-1)
+                        gbbox = covnertpoly2bbox(detected_polygon)
+                        if not is_bounding_box_larger_than_threshold(gbbox):
+                            continue    
+                        intersect = False
+                        for code in codes:
+                            if utils.polygon_utils.poly_intersection(convert2polygon(code['polygon']), convert2polygon(detected_polygon)) != 0.0:
+                                intersect = True
 
-                    if not intersect:
-                        instance = {"polygon": detected_polygon.tolist(),
-                                    "bbox": covnertpoly2bbox(detected_polygon),
-                                    "bbox_label": 0,
-                                    "text":text,
-                                    "ignore": False}
-                        instances.append(instance)
-                        num_instances+=1
+                        if not intersect:
+                            instance = {"polygon": detected_polygon.tolist(),
+                                        "bbox": covnertpoly2bbox(detected_polygon),
+                                        "bbox_label": 0,
+                                        "text":text,
+                                        "ignore": False}
+                            instances.append(instance)
+                            num_instances+=1
                 os.path.join(relative_img_path, os.path.basename(image_file))
                 img_data = {"instances": instances,
                             "img_path": os.path.join(relative_img_path, os.path.basename(image_file)),

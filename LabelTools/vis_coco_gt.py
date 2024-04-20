@@ -5,6 +5,7 @@ import json
 from tqdm import tqdm
 
 # The CTLABELS list for index-to-letter conversion
+
 '''
 CTLABELS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
             't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '']
@@ -22,6 +23,8 @@ CTLABELS = [' ','!','"','#','$','%','&','\'','(',')','*','+',',','-','.','/',
 json_file = '/home/ubuntu/workspace/projects/str-train/mmocr/text_spotting_test_96_coco.json'
 img_root = '/home/ubuntu/workspace/text_det_data/on-site'
 
+#img_root  = '/home/ubuntu/workspace/text_det_data/totaltext/train_images'
+#json_file = '/home/ubuntu/workspace/text_det_data/totaltext/train.json'
 def draw_annotations(json_file_path,img_root):
     with open(json_file_path, 'r') as file:
         data = json.load(file)

@@ -3,12 +3,12 @@ import numpy as np
 from find_shortest_edge_and_midpoint import find_shortest_edge_and_midpoint
 # Load A.json
 
-data_key='test'
-voc_len =96 
+data_key='train'
+voc_len =96
 
 with open(f'/home/ubuntu/workspace/projects/str-train/mmocr/textspotting_{data_key}.json') as file:
     a_data = json.load(file)
-
+anno_id = 0
 if voc_len==37:
     CTLABELS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
             't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '']
@@ -81,7 +81,7 @@ coco_data = {
     "annotations": []
 }
 
-
+'''
 def polygon_to_bezier(polygon):
     """
     Interpolate 8 points of a polygon into 8 Bézier curve control points.
@@ -114,8 +114,50 @@ def polygon_to_bezier(polygon):
     bezier_points[7] = points[3]  # P4
     
     return bezier_points.flatten().tolist()
+'''
+import numpy as np
 
-anno_id = 0
+def polygon_to_bezier(polygon):
+    """
+    Interpolate Bézier curve control points on the longest side and its opposite side of a quadrilateral.
+    Input polygon should be a list of four points [(x1, y1), (x2, y2), (x3, y3), (x4, y4)].
+    The function returns 8 control points for two Bézier curves:
+    - The first curve on the longest side
+    - The second curve on the opposite side of the longest side
+    """
+    if len(polygon) != 8:
+        raise ValueError("Polygon must have exactly four points.")
+
+    points = np.array(polygon).reshape(4, 2)   
+    
+    # Calculate distances between consecutive points, assuming the last point connects back to the first
+    distances = np.linalg.norm(points - np.roll(points, -1, axis=0), axis=1)
+    longest_side_index = np.argmax(distances)
+    opposite_side_index = (longest_side_index + 2) % 4  # Finding the opposite side in a cyclic manner
+
+    # Initialize an array for Bézier control points
+    bezier_points = np.zeros((8, 2))
+
+    # Function to interpolate two control points between two given points
+    def interpolate_controls(start, end):
+        return [start + 1/3 * (end - start), start + 2/3 * (end - start)]
+
+    # Longest side control points
+    p_start_long = points[longest_side_index]
+    p_end_long = points[(longest_side_index + 1) % 4]
+    bezier_points[0], bezier_points[3] = p_start_long, p_end_long
+    bezier_points[1], bezier_points[2] = interpolate_controls(p_start_long, p_end_long)
+
+    # Opposite side control points
+    p_start_opp = points[opposite_side_index]
+    p_end_opp = points[(opposite_side_index + 1) % 4]
+    bezier_points[4], bezier_points[7] = p_start_opp, p_end_opp
+    bezier_points[5], bezier_points[6] = interpolate_controls(p_start_opp, p_end_opp)
+
+    return bezier_points.flatten().tolist()
+
+
+
 for data_index, data_item in enumerate(a_data["data_list"]):
     coco_data["images"].append({
         "coco_url": "",
@@ -158,7 +200,7 @@ for data_index, data_item in enumerate(a_data["data_list"]):
 # Save to COCO.json
 print (f'annot:{len(coco_data["annotations"])},imgs:{len(coco_data["images"])}')
 
-with open(f'text_spotting_{data_key}_{voc_len}_coco.json', 'w') as outfile:
+with open(f'text_spotting_{data_key}_{voc_len}_coco2.json', 'w') as outfile:
     json.dump(coco_data, outfile, indent=4)
 
 print("Conversion completed and saved as COCO.json")
