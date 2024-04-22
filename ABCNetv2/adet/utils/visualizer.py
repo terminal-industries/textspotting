@@ -8,9 +8,11 @@ class TextVisualizer(Visualizer):
     def __init__(self, image, metadata, instance_mode, cfg):
         Visualizer.__init__(self, image, metadata, instance_mode=instance_mode)
         self.voc_size = cfg.MODEL.BATEXT.VOC_SIZE
+        #self.voc_size = 37
         self.use_customer_dictionary = cfg.MODEL.BATEXT.CUSTOM_DICT
         if not self.use_customer_dictionary:
             self.CTLABELS = [' ','!','"','#','$','%','&','\'','(',')','*','+',',','-','.','/','0','1','2','3','4','5','6','7','8','9',':',';','<','=','>','?','@','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','[','\\',']','^','_','`','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','{','|','}','~']
+            #self.CTLABELS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's','t', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '']            
         else:
             with open(self.use_customer_dictionary, 'rb') as fp:
                 self.CTLABELS = pickle.load(fp)
@@ -45,7 +47,7 @@ class TextVisualizer(Visualizer):
                 if self.voc_size == 96:
                     s += self.CTLABELS[c]
                 else:
-                    s += str(chr(self.CTLABELS[c]))
+                    s += str(self.CTLABELS[c])
             elif c == self.voc_size -1:
                 s += u'口'
         return s
@@ -65,12 +67,12 @@ class TextVisualizer(Visualizer):
                         s += str(chr(self.CTLABELS[c]))
                         last_char = c
             elif c == self.voc_size -1:
-                s += u'口'
+                s += '' 
             else:
                 last_char = False
         return s
 
-    def overlay_instances(self, beziers, recs, scores, alpha=0.5):
+    def overlay_instances(self, beziers, recs, scores, alpha=0.9):
         color = (0.1, 0.2, 0.5)
 
         for bezier, rec, score in zip(beziers, recs, scores):
@@ -128,7 +130,7 @@ class TextVisualizer(Visualizer):
         
         x, y = position
         if draw_chinese:
-            font_path = "./simsun.ttc"
+            font_path = "/home/steven/workspace/simsun.ttc"
             prop = mfm.FontProperties(fname=font_path)
             self.output.ax.text(
                 x,
