@@ -48,6 +48,10 @@ _PREDEFINED_SPLITS_TEXT = {
     "ctw1500_test": ("ctw1500/test_images", "ctw1500/test.json"),
     "inversetext_test": ("inversetext/test_images", "inversetext/test.json"),
     "rects_test": ("ReCTS/ReCTS_test_images", "ReCTS/rects_test.json"),
+    
+    "on_site_train": ("on_site/train_images", "on_site/train.json"),
+    "icdar2015_test": ("icdar2015/test_images", "icdar2015/ic15_test.json"),
+
 }
 
 metadata_text = {
