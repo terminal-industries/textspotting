@@ -20,8 +20,11 @@ CTLABELS = [' ','!','"','#','$','%','&','\'','(',')','*','+',',','-','.','/',
 # The JSON data you provided
 
 
-json_file = '/home/ubuntu/workspace/projects/str-train/mmocr/text_spotting_test_96_coco.json'
-img_root = '/home/ubuntu/workspace/text_det_data/on-site'
+json_file = '/home/ubuntu/workspace/text_det_data/ReCTS/annotations/rects_train.json'
+img_root = '/home/ubuntu/workspace/text_det_data/ReCTS/ReCTS_train_images'
+
+#json_file = 'text_spotting_train_96_coco.json'
+#img_root = '/home/ubuntu/workspace/text_det_data/on-site'
 
 #img_root  = '/home/ubuntu/workspace/text_det_data/totaltext/train_images'
 #json_file = '/home/ubuntu/workspace/text_det_data/totaltext/train.json'
@@ -43,7 +46,7 @@ def draw_annotations(json_file_path,img_root):
             # Draw bezier points as blue dots
             for i in range(0, len(annotation['bezier_pts']), 2):
                 x, y = annotation['bezier_pts'][i], annotation['bezier_pts'][i + 1]
-                draw.ellipse((x-2, y-2, x+2, y+2), fill='blue')
+                draw.text((x,y), str(int(i/2)), fill='red')
 
             # Draw bbox as a red rectangle
             bbox = annotation['bbox']

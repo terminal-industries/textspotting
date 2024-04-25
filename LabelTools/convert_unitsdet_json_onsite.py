@@ -14,7 +14,7 @@ vertical_id = 1
 license_pl = 2
 directory_path = '/home/ubuntu/workspace/text_det_data/on-site'
 threshold = 0.7
-split_ratio = 0.95
+split_ratio = 1.0
 use_units=False
 
 box_to_polygon = lambda x, y, w, h: [x, y, x + w, y, x + w, y + h, x, y + h]
@@ -139,8 +139,8 @@ items = os.listdir(directory_path)
 num_instances=0
 
 random.shuffle(items)  # Shuffle the list in place
-half_index = 2*len(items) // 3  # Calculate the half point (integer division)
-items = items[:half_index]  # Return the first half of the list
+#half_index = 2*len(items) // 3  # Calculate the half point (integer division)
+#items = items[:half_index]  # Return the first half of the list
 
 
 for item in tqdm(items):
@@ -154,7 +154,7 @@ for item in tqdm(items):
         check_units = os.path.exists(unit_text_path)
                     
 
-    if os.path.exists(src_json_path) and os.path.exists(src_img_path) and os.path.exists(unit_text_path)  : 
+    if os.path.exists(src_json_path) and os.path.exists(src_img_path) and check_units: 
         for i, filename in enumerate(os.listdir(src_json_path)):
             if filename.endswith('.json'):
                 with open(os.path.join(src_json_path, filename)) as f:
@@ -177,7 +177,7 @@ for item in tqdm(items):
                 img_t = cv2.imread(image_file)
                 img_height, img_width = img_t.shape[:2]
 
-                bboxes, scores ,texts = unit_det(os.path.join(unit_text_path,txt_file))
+                #bboxes, scores ,texts = unit_det(os.path.join(unit_text_path,txt_file))
 
                 instances = []
                 codes = []
@@ -193,11 +193,17 @@ for item in tqdm(items):
 
                     polygon = enlarge_polygon(polygon)
 
+                    vertical_text = False
+                    if 'vertical_text' in annot:
+                        vertical_text = annot['vertical_text']
+
                     instance = {"polygon": polygon,
                                 "bbox": box,
                                 "bbox_label": 0,
-                                "text":id,
-                                "ignore": False}
+                                "text":id,                                
+                                "ignore": False,
+                                "vertical_text":vertical_text
+                                }
                     codes.append(instance)                    
                     instances.append(instance)
                     num_instances+=1
@@ -244,12 +250,13 @@ data["data_list"] = data_list
 print (f'instances num:{num_instances}')
 # Split the data_list into train and test lists
 
+'''
 split_index = int(len(data_list) * split_ratio)
 train_data_list = data_list[:split_index]
 test_data_list = data_list[split_index:]
-
+'''
 # Save train data to textdet_train.json
-data['data_list'] = train_data_list
+#data['data_list'] = train_data_list
 data2 =  convert_floats(data)
 json_str = serialize_json(data2)
 
@@ -257,12 +264,13 @@ with open('textspotting_train.json', 'w') as file:
     file.write(json_str)
 
 # Save test data to textdet_test.json
+'''
 data['data_list'] = test_data_list
 data2 =  convert_floats(data)
 json_str = serialize_json(data2)
 with open('textspotting_test.json', 'w') as file:
     file.write(json_str)
-
+'''
 
 
 

@@ -1,12 +1,15 @@
 import json
 import numpy as np
 from find_shortest_edge_and_midpoint import find_shortest_edge_and_midpoint
+import math
+from polygon_util.py import order_points_quadrangle,sort_vertical_points
 # Load A.json
 
 data_key='train'
-voc_len =96
-
-with open(f'/home/ubuntu/workspace/projects/str-train/mmocr/textspotting_{data_key}.json') as file:
+#voc_len =96 
+voc_len =37
+with open(f'textspotting_{data_key}.json') as file:
+#with open('textspotting_train_sample.json') as file:
     a_data = json.load(file)
 anno_id = 0
 if voc_len==37:
@@ -19,6 +22,72 @@ else:
                 'W','X','Y','Z','[','\\',']','^','_','`','a','b','c','d','e','f','g','h','i','j','k','l',
                 'm','n','o','p','q','r','s','t','u','v','w','x','y','z','{','|','}','~']
                             
+def find_top_left_point(points):
+    # Sort points by y-value (ascending); if tied, by x-value (ascending)
+    sorted_points = sorted(points, key=lambda x: (x[1], x[0]))
+    return sorted_points[0]
+
+def sort_polygon_points(width, height, input_points, is_vertical):
+    # Define corner points based on image width and height
+    # Step 1: Find the top left point (P0)
+    points = np.array(input_points).reshape(4, 2) 
+
+    if not is_vertical:
+        ordered_points = order_points_quadrangle(points)
+    else:
+
+        ordered_points = sort_vertical_points(points)
+
+    return ordered_points.flatten().tolist() 
+
+
+
+'''
+def find_top_left_point(points):
+    # Sort points by y-value (ascending); if tied, by x-value (ascending)
+    sorted_points = sorted(points, key=lambda x: (x[1], x[0]))
+    return sorted_points[0]
+
+def sort_bezier_points(bezier_pts, is_vertical):
+    points = np.array(bezier_pts).reshape(8, 2)
+
+    P0 = find_top_left_point(points)
+    
+    # Remove P0 from the list of points for further processing
+    remaining_points = np.array([p for p in points if not np.array_equal(p, P0)])
+    
+    if is_vertical:
+        # Sort remaining points based on proximity in the Y direction from P0
+        sorted_by_y = sorted(remaining_points, key=lambda p: np.abs(p[1] - P0[1]))
+        P1, P2, P3 = sorted_by_y[:3]
+        
+        # Find P7 as the closest point in the X direction from P0
+        sorted_by_x = sorted(remaining_points, key=lambda p: np.abs(p[0] - P0[0]))
+        P7 = sorted_by_x[0]
+        
+        # Remove P7 and sort remaining points for P7 in the Y direction
+        remaining_for_p7 = [p for p in sorted_by_x[1:] if not np.array_equal(p, P7)]
+        sorted_by_y_p7 = sorted(remaining_for_p7, key=lambda p: np.abs(p[1] - P7[1]))
+        P6, P5, P4 = sorted_by_y_p7[:3]
+    else:
+        # Sort remaining points based on proximity in the X direction from P0
+        sorted_by_x = sorted(remaining_points, key=lambda p: np.abs(p[0] - P0[0]))
+        P1, P2, P3 = sorted_by_x[:3]
+        
+        # Find P7 as the closest point in the Y direction from P0
+        sorted_by_y = sorted(remaining_points, key=lambda p: np.abs(p[1] - P0[1]))
+        P7 = sorted_by_y[0]
+        
+        # Remove P7 and sort remaining points for P7 in the X direction
+        remaining_for_p7 = [p for p in sorted_by_y[1:] if not np.array_equal(p, P7)]
+        sorted_by_x_p7 = sorted(remaining_for_p7, key=lambda p: np.abs(p[0] - P7[0]))
+        P6, P5, P4 = sorted_by_x_p7[:3]
+    
+    # Assemble all points in the correct order
+    reordered_points = np.array([P0, P1, P2, P3, P4, P5, P6, P7])
+
+    return reordered_points.flatten().tolist()
+'''    
 
 def simplify_to_rectangle(polygon_coords):
     """
@@ -81,40 +150,7 @@ coco_data = {
     "annotations": []
 }
 
-'''
-def polygon_to_bezier(polygon):
-    """
-    Interpolate 8 points of a polygon into 8 Bézier curve control points.
-    Input polygon should be a list of four points [(x1, y1), (x2, y2), (x3, y3), (x4, y4)].
-    The function returns 8 control points for two Bézier curves:
-    - The first curve between P1 and P2
-    - The second curve between P3 and P4
-    """
-    if len(polygon) != 8:
-        raise ValueError("Polygon must have exactly four points.")
 
-    points = np.array(polygon).reshape(4, 2)        
-    
-    # Convert polygon to numpy array for easier manipulation
-    # points = np.array(polygon)
-    
-    # Initialize an array for Bézier control points
-    bezier_points = np.zeros((8, 2))
-    
-    # Insert two control points between P1 and P2
-    bezier_points[0] = points[0]  # P1
-    bezier_points[1] = points[0] + 1/3 * (points[1] - points[0])  # Control point 1
-    bezier_points[2] = points[0] + 2/3 * (points[1] - points[0])  # Control point 2
-    bezier_points[3] = points[1]  # P2
-    
-    # Insert two control points between P3 and P4
-    bezier_points[4] = points[2]  # P3
-    bezier_points[5] = points[2] + 1/3 * (points[3] - points[2])  # Control point 3
-    bezier_points[6] = points[2] + 2/3 * (points[3] - points[2])  # Control point 4
-    bezier_points[7] = points[3]  # P4
-    
-    return bezier_points.flatten().tolist()
-'''
 import numpy as np
 
 def polygon_to_bezier(polygon):
@@ -128,33 +164,33 @@ def polygon_to_bezier(polygon):
     if len(polygon) != 8:
         raise ValueError("Polygon must have exactly four points.")
 
-    points = np.array(polygon).reshape(4, 2)   
-    
-    # Calculate distances between consecutive points, assuming the last point connects back to the first
-    distances = np.linalg.norm(points - np.roll(points, -1, axis=0), axis=1)
-    longest_side_index = np.argmax(distances)
-    opposite_side_index = (longest_side_index + 2) % 4  # Finding the opposite side in a cyclic manner
+    vertices = np.array(polygon).reshape(4, 2)
+    vertices_list = [tuple(vertex) for vertex in vertices]
 
-    # Initialize an array for Bézier control points
-    bezier_points = np.zeros((8, 2))
+    # 计算边的长度和对应的两个顶点
+    num_vertices = len(vertices_list)
+    edges = [(np.linalg.norm(vertices[i] - vertices[(i + 1) % num_vertices]), i, (i + 1) % num_vertices)
+             for i in range(num_vertices)]
 
-    # Function to interpolate two control points between two given points
-    def interpolate_controls(start, end):
-        return [start + 1/3 * (end - start), start + 2/3 * (end - start)]
+    # 按长度排序并取最长的两条边
+    longest_edges = sorted(edges, key=lambda x: x[0], reverse=True)[:2]
 
-    # Longest side control points
-    p_start_long = points[longest_side_index]
-    p_end_long = points[(longest_side_index + 1) % 4]
-    bezier_points[0], bezier_points[3] = p_start_long, p_end_long
-    bezier_points[1], bezier_points[2] = interpolate_controls(p_start_long, p_end_long)
+    # 新的顶点集合，初始包含所有原始顶点
+    new_vertices = vertices_list.copy()
 
-    # Opposite side control points
-    p_start_opp = points[opposite_side_index]
-    p_end_opp = points[(opposite_side_index + 1) % 4]
-    bezier_points[4], bezier_points[7] = p_start_opp, p_end_opp
-    bezier_points[5], bezier_points[6] = interpolate_controls(p_start_opp, p_end_opp)
+    # 处理每一条最长的边，插入两个点
+    for _, start, end in longest_edges:
+        # 计算插入点的坐标
+        p1 = tuple(vertices[start] + (vertices[end] - vertices[start]) * 1 / 3)
+        p2 = tuple(vertices[start] + (vertices[end] - vertices[start]) * 2 / 3)
+        
+        # 在结束点前插入新点
+        end_index = new_vertices.index(vertices_list[end])
+        new_vertices.insert(end_index, p2)
+        new_vertices.insert(end_index, p1)    
 
-    return bezier_points.flatten().tolist()
+    vertices = [round(num, 2) for point in new_vertices for num in point]
+    return vertices
 
 
 
@@ -184,7 +220,12 @@ for data_index, data_item in enumerate(a_data["data_list"]):
                 _,polygon = find_shortest_edge_and_midpoint(instance["polygon"])
                 _,polygon = find_shortest_edge_and_midpoint(polygon)
                 _,instance["polygon"] = find_shortest_edge_and_midpoint(polygon)
-                            
+
+        #polygon = sort_polygon_points(instance["polygon"],instance['vertical_text'])        
+        #btz_points = polygon_to_bezier(instance["polygon"])        
+        #btz_points = sort_bezier_points(btz_points, instance['vertical_text'])
+        btz_points = sort_polygon_points(data_item["width"],data_item["height"],instance["polygon"],instance['vertical_text'])
+        btz_points = polygon_to_bezier(btz_points) 
         coco_data["annotations"].append({
             "area": 0,  # Placeholder, should calculate actual area
             "bbox": convert_to_wh_format(instance["bbox"]),
@@ -192,7 +233,7 @@ for data_index, data_item in enumerate(a_data["data_list"]):
             "id": anno_id,
             "image_id": data_index,
             "iscrowd": 0,
-            "bezier_pts": polygon_to_bezier(instance["polygon"]),
+            "bezier_pts": btz_points,
             "rec": text_to_indices(instance["text"])            
         })
         anno_id +=1
@@ -200,7 +241,7 @@ for data_index, data_item in enumerate(a_data["data_list"]):
 # Save to COCO.json
 print (f'annot:{len(coco_data["annotations"])},imgs:{len(coco_data["images"])}')
 
-with open(f'text_spotting_{data_key}_{voc_len}_coco2.json', 'w') as outfile:
+with open(f'text_spotting_{data_key}_{voc_len}_coco.json', 'w') as outfile:
     json.dump(coco_data, outfile, indent=4)
 
-print("Conversion completed and saved as COCO.json")
+print(f"Conversion completed and saved as text_spotting_{data_key}_{voc_len}_coco.json")
