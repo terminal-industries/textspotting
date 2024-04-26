@@ -291,13 +291,21 @@ For academic use, this project is licensed under the 2-clause BSD License - see 
 
 ## Training by owned data:
 
-1. start docker(on debug server)
+1. start docker
+
+debug server
 
 ```
 docker run  --shm-size=8g --gpus all --net=host -v /home/:/home -v /mnt/:/mnt/ -it dockerhubti/mmdeploy_trt84:latest /bin/bash
+
+```
+AWS
+
+```
+docker run  --shm-size=8g --gpus all --net=host -v /home/:/home -it tianzhi0549/adet:latest /bin/bash
 ```
 
-2. install detectron2 (in specific branch)
+2. install detectron2 (in specific branch, dont need in AWS)
 
 ```
 pip instlal -v -e .
@@ -321,6 +329,7 @@ OMP_NUM_THREADS=1 python tools/train_net.py    --config-file configs/BAText/Pret
 5. Demo
 
 python demo/demo.py --config-file configs/BAText/Pretrain/v2_attn_R_50_finetune.yaml --input /mnt/ssd4T/steven/on-site/2024-01-09-sync/images/ --opts MODEL.WEIGHTS model_0099999.pth --output ./output_res
+
 
 6. Train network by
 
