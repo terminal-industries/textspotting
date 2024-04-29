@@ -1,12 +1,19 @@
 Please follow the steps below to install the necessary execution packages in our current Docker environment:
 
+
+1. Clone code:
+
+```
+git@github.com:terminal-industries/texspotting.git
+```
+
 1. Download the latest weights from the following location:
 
 ```
 s3://terminal-dev-bucket/data/tmpdata/model_str/R50/150k_tt_mlt_13_15/pretrain/model_0289999.pth
 ```
 
-2. Navigate to the `TransformerTxtSpotting` directory:
+2. Navigate to the `transformertxtspotting` directory install followed dependencies:
 
 ```
 pip install -r requirements.txt
