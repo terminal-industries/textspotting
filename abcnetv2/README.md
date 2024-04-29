@@ -328,8 +328,9 @@ OMP_NUM_THREADS=1 python tools/train_net.py    --config-file configs/BAText/Pret
 
 5. Demo
 
+```
 python demo/demo.py --config-file configs/BAText/Pretrain/v2_attn_R_50_finetune.yaml --input /mnt/ssd4T/steven/on-site/2024-01-09-sync/images/ --opts MODEL.WEIGHTS model_0099999.pth --output ./output_res
-
+```
 
 6. Train network by
 
