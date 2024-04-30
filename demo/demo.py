@@ -16,7 +16,6 @@ from PIL import Image
 import numpy as np
 
 # constants
-WINDOW_NAME = "COCO detections"
 
 def draw_polygon_and_text(image, polygon, text):
     pts = np.array(polygon, np.int32)
