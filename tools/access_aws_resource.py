@@ -87,8 +87,8 @@ def start_ec2_instance():
     #instance_id = 'i-0286c1afc95d3abdd'
     #region = 'us-east-2'
 
-    instance_id = 'i-03ee1cf9ea18858c1'
-    region = 'us-west-2'
+    instance_id = 'i-0c066b182b12b1ab5'
+    region = 'us-east-2'
 
 
     ec2 = boto3.client('ec2', 
