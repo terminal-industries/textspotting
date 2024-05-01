@@ -17,6 +17,7 @@ import numpy as np
 
 # constants
 
+
 def draw_polygon_and_text(image, polygon, text):
     pts = np.array(polygon, np.int32)
     pts = pts.reshape((-1, 1, 2))

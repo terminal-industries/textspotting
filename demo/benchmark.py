@@ -17,7 +17,8 @@ import numpy as np
 import glob
 # constants
 #  lable /home/ubuntu/workspace/data/benchmark3.5/labels/
-
+# target_gts = ['License plate', 'Chassis ID', 'US DOT', 'Carrier-ID', 'VIN', 'Trailer ID', 'MC', 'CA', 'Ryder-ID', 'Container ID' ],
+target_gts = ['License plate']
 def read_gt_info(filename):
     # Strip the ".json" extension from the filename
     with open(filename, 'r') as file:
@@ -31,7 +32,7 @@ def read_gt_info(filename):
     
     # Loop through each item in the JSON data
     for item in json_data:
-        if item['id']:  # Check if the 'id' field is not empty
+        if item["id_type"] in target_gts and item['id']:        
             ids.append(item['id'].lower())
     
     # Return the result in the specified format
@@ -80,8 +81,11 @@ def calculate_metrics(detected_texts, ground_truths):
     recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0
     f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
 
+
     # Calculate accuracy: (true positives) / (true positives + false positives + false negatives)
     accuracy = true_positives / (true_positives + false_positives + false_negatives) if (true_positives + false_positives + false_negatives) > 0 else 0
+
+    print(f'true_positives:{true_positives},false_positives:{false_positives},false_negatives:{false_negatives}')
     
     return {
         'precision': "{:.4f}".format(precision),
@@ -185,7 +189,10 @@ def analyze_data(data):
         else:
             vertical_text_counts['false'] += 1
 
-    return id_type_counts, vertical_text_counts
+    return {
+            'text type':id_type_counts, 
+            'vertical text':vertical_text_counts
+            }
 
 
 if __name__ == "__main__":
@@ -193,7 +200,7 @@ if __name__ == "__main__":
     args = get_parser().parse_args()
     logger = setup_logger()
     logger.info("Arguments: " + str(args))
-    print(args)
+    
     cfg = setup_cfg(args)
 
     demo = VisualizationDemo(cfg)
