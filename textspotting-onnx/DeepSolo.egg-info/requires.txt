@@ -1,0 +1,7 @@
+numpy
+onnx
+onnxruntime
+timm
+
+[all]
+psutil
